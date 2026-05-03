@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL (unchanged)
+  postgres:
+    image: debezium/postgres:15
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    command: [
+      "postgres",
+      "-c", "wal_level=logical",
+      "-c", "max_wal_size=4GB",
+      "-c", "min_wal_size=1GB"
+    ]
+
+  # 2. Kafka in KRaft Mode (Single Node)
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0 # Use a recent version
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft Specific Settings
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      # Metadata Log
+      KAFKA_CONTROLLER_LOG_REPLAY_KEEPALIVE_MS: 300000
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk' # Any base64 string works locally
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  # 3. Debezium Connect
+  connect:
+    image: debezium/connect:2.4
+    depends_on:
+      - kafka
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: connect_configs
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      STATUS_STORAGE_TOPIC: connect_statuses
+      # Outbox Transformation
+      CONNECT_TRANSFORMS: outbox
+      CONNECT_TRANSFORMS_OUTBOX_TYPE: io.debezium.transforms.outbox.EventRouter
+
+  kafka-ui:
+    image: kafbat/kafka-ui:latest # Actively maintained successor to provectus/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      # Configure the UI to connect to your KRaft broker
+      KAFKA_CLUSTERS_0_NAME: local-development
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      # Optional: Enable management for Kafka Connect if using Debezium
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: debezium
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://connect:8083
+    depends_on:
+      - kafka
+      - connect
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.21
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    environment:
+      - ETCD_NAME=default
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://127.0.0.1:2380
+      - ETCD_ADVERTISE_CLIENT_URLS=http://127.0.0.1:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_CLUSTER=default=http://127.0.0.1:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      - ALLOW_NONE_AUTHENTICATION=yes

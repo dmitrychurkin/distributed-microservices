@@ -1,0 +1,15 @@
+Name: gateway
+Host: 127.0.0.1
+Port: 3000
+Upstreams:
+  - Grpc:
+      Etcd:
+        Hosts:
+          - 127.0.0.1:2379
+        Key: ordering.rpc
+    ProtoSets:
+      - pb/ordering.pb
+    Mappings:
+      - Method: post
+        Path: /order
+        RpcPath: ordering.Ordering/PlaceOrder

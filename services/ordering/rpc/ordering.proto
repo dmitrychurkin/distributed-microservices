@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ordering;
+option go_package="./ordering";
+
+message Request {
+  string product_id = 1;
+}
+
+message Response {
+  string order_id = 1;
+}
+
+service Ordering {
+  rpc PlaceOrder(Request) returns(Response);
+}

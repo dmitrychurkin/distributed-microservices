@@ -1,0 +1,9 @@
+go 1.26.2
+
+use (
+	./gateway
+	./services/delivery
+	./services/ordering
+	./pkg/env
+	./pkg/shutdown
+)

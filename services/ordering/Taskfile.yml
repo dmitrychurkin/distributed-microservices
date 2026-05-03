@@ -1,0 +1,14 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  migration:new:
+    desc: "Create a new goose migration. Usage: task migration:new name=add_table_name"
+    cmds:
+      - goose -dir migrations create {{.name}} sql
+
+  migration:up:
+    desc: "Apply goose migrations"
+    cmds:
+      - goose up

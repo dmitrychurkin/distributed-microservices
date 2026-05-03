@@ -1,0 +1,25 @@
+{
+  "name": "ordering::outbox-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "database.dbname": "orders_db",
+    "topic.prefix": "ordering",
+    "table.include.list": "public.outbox",
+    "tombstones.on.delete": "false",
+    "delete.handling.mode": "none",
+    "plugin.name": "pgoutput",
+    "transforms": "outbox",
+    "transforms.unwrap.delete.tombstone.handling.mode": "tombstone",
+    "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+    "transforms.outbox.route.topic.replacement": "outbox.event.${routedByValue}",
+    "transforms.outbox.route.by.field": "aggregate_type",
+    "transforms.outbox.table.field.event.key": "aggregate_id",
+    "transforms.outbox.table.field.event.payload": "payload",
+    "transforms.outbox.table.field.event.id": "id",
+    "transforms.outbox.event.removal": "true"
+  }
+}

@@ -1,0 +1,13 @@
+Name: delivery.mqs
+Port: 8084
+Log:
+  Encoding: plain
+DataSource: "${DB_URL}"
+KqConsumerConf:
+  Name: delivery::consumer
+  Brokers:
+    - 127.0.0.1:9092
+  Group: delivery::consumer
+  Topic: outbox.event.order_created
+  Offset: first
+  ForceCommit: false

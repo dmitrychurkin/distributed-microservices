@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+  regenerate:proto:ordering-svc:
+    desc: "Regenerate ordering.pb from ordering.proto"
+    cmds:
+      - cd services/ordering/rpc && goctl rpc protoc ordering.proto --go_out=. --go-grpc_out=. --zrpc_out=.
+
+  regenerate:proto:ordering-gateway:
+    desc: "Regenerate Proto code for gateway"
+    deps: [regenerate:proto:ordering-svc]
+    cmds:
+      - protoc --include_imports --include_source_info --descriptor_set_out=gateway/pb/ordering.pb services/ordering/rpc/ordering.proto
