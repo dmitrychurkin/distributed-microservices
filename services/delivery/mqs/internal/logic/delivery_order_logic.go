@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type OrderCreated struct {
@@ -34,19 +35,19 @@ func (l *OrderCreated) Consume(ctx context.Context, key, val string) error {
 		return err
 	}
 
-	if _, err := l.svcCtx.SqlConn.ExecCtx(
-		ctx,
-		`INSERT INTO deliveries (order_id, product_id)
-		VALUES ($1, $2)
-		ON CONFLICT (order_id)
-		DO UPDATE SET
+	return l.svcCtx.TransactCtx(ctx, func(ctx context.Context, session sqlx.Session) error {
+		_, err := session.ExecCtx(
+			ctx,
+			`INSERT INTO deliveries (order_id, product_id)
+			VALUES ($1, $2)
+			ON CONFLICT (order_id)
+			DO UPDATE SET
 			product_id = EXCLUDED.product_id,
 			updated_at = CURRENT_TIMESTAMP`,
-		orderPayload.OrderId,
-		orderPayload.ProductId,
-	); err != nil {
-		return err
-	}
+			orderPayload.OrderId,
+			orderPayload.ProductId,
+		)
 
-	return nil
+		return err
+	})
 }

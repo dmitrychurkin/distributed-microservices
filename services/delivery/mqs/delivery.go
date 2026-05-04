@@ -40,7 +40,7 @@ func main() {
 
 	serviceGroup.Add(server)
 
-	group, exit := shutdown.NewService(&serviceGroup)
+	group, exit := shutdown.NewService(serviceGroup)
 
 	go func() {
 		fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)

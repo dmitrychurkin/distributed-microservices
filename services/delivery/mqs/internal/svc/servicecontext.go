@@ -7,7 +7,7 @@ import (
 )
 
 type ServiceContext struct {
-	Config config.Config
+	config.Config
 
 	sqlx.SqlConn
 }

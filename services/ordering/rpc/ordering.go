@@ -40,7 +40,7 @@ func main() {
 		}
 	})
 
-	service, exit := shutdown.NewService(&server)
+	service, exit := shutdown.NewService(server)
 
 	go func() {
 		fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)

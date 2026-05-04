@@ -40,7 +40,7 @@ func (l *PlaceOrderLogic) PlaceOrder(in *ordering.Request) (*ordering.Response, 
 		return nil, err
 	}
 
-	err = l.svcCtx.SqlConn.TransactCtx(l.ctx, func(ctx context.Context, session sqlx.Session) error {
+	err = l.svcCtx.TransactCtx(l.ctx, func(ctx context.Context, session sqlx.Session) error {
 		if _, err := session.ExecCtx(
 			ctx,
 			`INSERT INTO orders (uuid, product_id) VALUES ($1, $2)`,
