@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"pkg/env"
@@ -31,26 +30,25 @@ func main() {
 
 	server, serviceGroup := rest.MustNewServer(c.RestConf), service.NewServiceGroup()
 
-	ctx, svcContext := context.Background(), svc.NewServiceContext(c)
+	svcContext := svc.NewServiceContext(c)
 
 	for _, mq := range []service.Service{
-		kq.MustNewQueue(c.KqConsumerConf, logic.NewOrderCreated(ctx, svcContext)),
+		kq.MustNewQueue(c.KqConsumerConf, logic.NewOrderCreated(svcContext)),
 	} {
 		serviceGroup.Add(mq)
 	}
 
 	serviceGroup.Add(server)
 
+	group, exit := shutdown.NewService(&serviceGroup)
+
 	go func() {
 		fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
 
-		serviceGroup.Start()
+		group.Start()
 	}()
-
-	graceService, exit := shutdown.NewService(server)
 
 	<-exit
 
-	graceService.Stop()
-	serviceGroup.Stop()
+	group.Stop()
 }

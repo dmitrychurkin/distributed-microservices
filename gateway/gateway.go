@@ -20,7 +20,7 @@ func main() {
 
 	server := gateway.MustNewServer(c)
 
-	service, exit := shutdown.NewService(server)
+	service, exit := shutdown.NewService(&server)
 
 	go func() {
 		fmt.Println("Starting GATEWAY server ...")

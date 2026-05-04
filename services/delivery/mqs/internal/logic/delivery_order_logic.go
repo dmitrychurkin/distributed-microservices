@@ -9,15 +9,11 @@ import (
 )
 
 type OrderCreated struct {
-	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewOrderCreated(ctx context.Context, svcCtx *svc.ServiceContext) *OrderCreated {
-	return &OrderCreated{
-		ctx:    ctx,
-		svcCtx: svcCtx,
-	}
+func NewOrderCreated(svcCtx *svc.ServiceContext) *OrderCreated {
+	return &OrderCreated{svcCtx}
 }
 
 func (l *OrderCreated) Consume(ctx context.Context, key, val string) error {

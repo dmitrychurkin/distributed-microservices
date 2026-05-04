@@ -8,10 +8,10 @@ import (
 )
 
 type service[S Service] struct {
-	instance S
+	instance *S
 }
 
-func NewService[S Service](instance S) (*service[S], <-chan os.Signal) {
+func NewService[S Service](instance *S) (*service[S], <-chan os.Signal) {
 	exit := make(chan os.Signal, 1)
 
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
@@ -22,11 +22,11 @@ func NewService[S Service](instance S) (*service[S], <-chan os.Signal) {
 func (self *service[S]) Start() {
 	fmt.Println("Starting the service")
 
-	self.instance.Start()
+	(*self.instance).Start()
 }
 
 func (self *service[S]) Stop() {
 	fmt.Println("Stopping the service")
 
-	self.instance.Stop()
+	(*self.instance).Stop()
 }
