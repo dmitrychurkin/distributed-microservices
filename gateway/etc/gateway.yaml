@@ -6,7 +6,8 @@ Prometheus:
   Port: 9101
   Path: /metrics
 Upstreams:
-  - Grpc:
+  - Name: ordering
+    Grpc:
       Etcd:
         Hosts:
           - 127.0.0.1:2379
@@ -15,5 +16,5 @@ Upstreams:
       - pb/ordering.pb
     Mappings:
       - Method: post
-        Path: /order
+        Path: /api/v1/orders
         RpcPath: ordering.Ordering/PlaceOrder
