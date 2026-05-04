@@ -1,7 +1,7 @@
 package shutdown
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,13 +20,13 @@ func NewService[S Service](instance *S) (*service[S], <-chan os.Signal) {
 }
 
 func (self *service[S]) Start() {
-	fmt.Println("Starting the service")
+	log.Println("Starting the service")
 
 	(*self.instance).Start()
 }
 
 func (self *service[S]) Stop() {
-	fmt.Println("Stopping the service")
+	log.Println("Stopping the service")
 
 	(*self.instance).Stop()
 }
